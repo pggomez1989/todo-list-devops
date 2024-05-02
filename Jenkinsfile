@@ -4,22 +4,23 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                // Realiza cualquier paso de construcción necesario para tu aplicación
-            }
-        }
-        stage('Start Containers') {
-            steps {
-                sh 'docker-compose up -d'
+                // Aquí puedes colocar los pasos necesarios para construir tu aplicación.
+                // Por ejemplo, compilar el código fuente, empaquetar la aplicación, etc.
+                sh 'echo "Realizando la construcción de la aplicación"'
             }
         }
         stage('Test') {
             steps {
-                // Ejecuta pruebas de integración o cualquier otro tipo de prueba necesario
+                // Aquí puedes colocar los pasos necesarios para ejecutar pruebas.
+                // Por ejemplo, ejecutar pruebas unitarias, pruebas de integración, etc.
+                sh 'echo "Ejecutando pruebas de la aplicación"'
             }
         }
         stage('Deploy') {
             steps {
-                // Realiza cualquier paso necesario para desplegar tu aplicación
+                // Aquí puedes colocar los pasos necesarios para desplegar tu aplicación.
+                // Por ejemplo, utilizar Docker Compose para desplegar contenedores.
+                sh 'docker-compose up -d'
             }
         }
     }
