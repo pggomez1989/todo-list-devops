@@ -5,8 +5,9 @@ pipeline {
         stage('Install Docker Compose') {
             steps {
                 script {
-                    sh 'curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose'
-                    sh 'chmod +x /usr/local/bin/docker-compose'
+                    sh 'mkdir -p $HOME/.jenkins/docker-compose'
+                    sh 'curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-Linux-x86_64" -o $HOME/.jenkins/docker-compose/docker-compose'
+                    sh 'chmod +x $HOME/.jenkins/docker-compose/docker-compose'
                 }
             }
         }
