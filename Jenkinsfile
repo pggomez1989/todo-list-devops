@@ -6,7 +6,7 @@ pipeline {
             steps {
                 // Aquí puedes colocar los pasos necesarios para construir tu aplicación.
                 // Por ejemplo, compilar el código fuente, empaquetar la aplicación, etc.
-                sh 'echo "Realizando la construcción de la aplicación de prueba"'
+                sh 'echo "Realizando la construcción de la aplicación"'
             }
         }
         stage('Test') {
