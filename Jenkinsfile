@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     stages {
-        stage('Build') {
+        stage('Build start') {
             steps {
                 // Aquí puedes colocar los pasos necesarios para construir tu aplicación.
                 // Por ejemplo, compilar el código fuente, empaquetar la aplicación, etc.
