@@ -7,11 +7,7 @@ pipeline {
     stages {
         stage('Build start') {
             steps {
-                git 'https://github.com/pggomez1989/todo-list-devops.git'
-            },
-            steps {
                 git branch: "${BRANCH_PROJECT}",
-                    // credentialsId: 'ae4f69cd-46dc-4031-8750-4b9dcaa005ed',
                     credentialsId: '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',
                     url: "${GIT_REPOSITORY}"
             }
