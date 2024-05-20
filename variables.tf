@@ -7,7 +7,7 @@ variable "instance_type" {
   default = "t2.micro"
 }
 
-variable "count"{
+variable "instance_count"{
   type = number
   default = 1
 }
