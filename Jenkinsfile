@@ -5,7 +5,7 @@ pipeline {
         BRANCH_PROJECT = "main"
     }
     tools {
-        terraform 'Terraform 1.0.10'  // Asume que ya configuraste esta versión en Global Tool Configuration
+        terraform 'Terraform'  // Asume que ya configuraste esta versión en Global Tool Configuration
     }
     stages {
         stage('Build start') {
