@@ -8,7 +8,8 @@ pipeline {
         stage('Build start') {
             steps {
                 git branch: "${BRANCH_PROJECT}",
-                    credentialsId: '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',
+                    // credentialsId: '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',
+                    credentialsId: '7df94e06-bbc2-4332-83e5-dfac02b22fd6',
                     url: "${GIT_REPOSITORY}"
             }
         }
