@@ -1,9 +1,19 @@
 pipeline {
     agent any
+    environment {
+        GIT_REPOSITORY = "git@github.com:pggomez1989/todo-list-devops.git"
+        BRANCH_PROJECT = "main"
+    }
     stages {
-        stage('Checkout') {
+        stage('Build start') {
             steps {
                 git 'https://github.com/pggomez1989/todo-list-devops.git'
+            },
+            steps {
+                git branch: "${BRANCH_PROJECT}",
+                    // credentialsId: 'ae4f69cd-46dc-4031-8750-4b9dcaa005ed',
+                    credentialsId: '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',
+                    url: "${GIT_REPOSITORY}"
             }
         }
         stage('Setup Terraform') {
