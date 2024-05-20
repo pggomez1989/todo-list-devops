@@ -5,7 +5,7 @@ pipeline {
         BRANCH_PROJECT = "main"
     }
     tools {
-        terraform 'terraform'  // Asume que ya configuraste esta versión en Global Tool Configuration
+        terraform 'Terraform Plugin 1.0.10'  // Asume que ya configuraste esta versión en Global Tool Configuration
     }
     stages {
         stage('Build start') {
@@ -18,6 +18,9 @@ pipeline {
         }
         stage('Setup Terraform') {
             steps {
+                // Verifica la versión de Terraform
+                sh 'terraform --version'
+                // Inicializa Terraform
                 sh 'terraform init'
             }
         }
