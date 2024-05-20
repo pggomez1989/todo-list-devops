@@ -1,7 +1,7 @@
 pipeline {
     agent any
     stages {
-        stage('Checkout') {
+        stage('Build start') {
             steps {
                 git 'https://github.com/pggomez1989/todo-list-devops.git'
             }
