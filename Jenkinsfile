@@ -5,13 +5,13 @@ pipeline {
         BRANCH_PROJECT = "main"
     }
     stages {
-        stage('Build start') {
-            steps {
-                git branch: "${BRANCH_PROJECT}",
-                    credentialsId: '7df94e06-bbc2-4332-83e5-dfac02b22fd6',
-                    url: "${GIT_REPOSITORY}"
-            }
-        }
+        // stage('Build start') {
+        //     steps {
+        //         git branch: "${BRANCH_PROJECT}",
+        //             credentialsId: '7df94e06-bbc2-4332-83e5-dfac02b22fd6',
+        //             url: "${GIT_REPOSITORY}"
+        //     }
+        // }
         stage('Setup Terraform') {
             steps {
                 script {
