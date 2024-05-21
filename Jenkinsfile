@@ -14,10 +14,20 @@ pipeline {
         }
         stage('Setup Terraform') {
             steps {
-                // Verifica la versión de Terraform
-                sh 'terraform --version'
-                // Inicializa Terraform
-                sh 'terraform init'
+                script {
+                    // Verifica la versión de Terraform
+                    sh 'terraform --version'
+                    
+                    // Inicializa Terraform
+                    def tfInitStatus = sh(script: 'terraform init', returnStatus: true)
+                    
+                    // Verifica el resultado de la inicialización de Terraform
+                    if (tfInitStatus == 0) {
+                        echo 'Terraform initialized successfully.'
+                    } else {
+                        error 'Failed to initialize Terraform.'
+                    }
+                }
             }
         }
         stage('Apply Terraform') {
