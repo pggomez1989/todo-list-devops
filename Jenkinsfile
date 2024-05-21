@@ -5,13 +5,12 @@ pipeline {
         BRANCH_PROJECT = "main"
     }
     tools {
-        terraform 'Terraform Plugin 1.0.10'  // Asume que ya configuraste esta versión en Global Tool Configuration
+        terraform 'Terraform_Plugin_1.0.10'  // Asume que ya configuraste esta versión en Global Tool Configuration
     }
     stages {
         stage('Build start') {
             steps {
                 git branch: "${BRANCH_PROJECT}",
-                    // credentialsId: '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',
                     credentialsId: '7df94e06-bbc2-4332-83e5-dfac02b22fd6',
                     url: "${GIT_REPOSITORY}"
             }
