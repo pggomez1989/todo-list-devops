@@ -4,9 +4,6 @@ pipeline {
         GIT_REPOSITORY = "git@github.com:pggomez1989/todo-list-devops.git"
         BRANCH_PROJECT = "main"
     }
-    tools {
-        terraform 'Terraform_Plugin_1.0.10'  // Asume que ya configuraste esta versión en Global Tool Configuration
-    }
     stages {
         stage('Build start') {
             steps {
