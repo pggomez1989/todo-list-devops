@@ -12,21 +12,15 @@ pipeline {
                     url: "${GIT_REPOSITORY}"
             }
         }
-        stage('Setup Terraform') {
+        stage('Install Terraform') {
             steps {
                 script {
-                    // Verifica la versión de Terraform
-                    sh 'terraform --version'
-                    
-                    // Inicializa Terraform
-                    def tfInitStatus = sh(script: 'terraform init', returnStatus: true)
-                    
-                    // Verifica el resultado de la inicialización de Terraform
-                    if (tfInitStatus == 0) {
-                        echo 'Terraform initialized successfully.'
-                    } else {
-                        error 'Failed to initialize Terraform.'
-                    }
+                    def terraformVersion = '1.8.3' ## you can define whatever req version you need
+                    sh "wget https://releases.hashicorp.com/terraform/${terraformVersion}/terraform_${terraformVersion}_linux_amd64.zip"
+                    sh "unzip -o terraform_${terraformVersion}_linux_amd64.zip"
+                    sh 'chmod +x terraform'
+                    sh 'mv terraform /usr/local/bin/terraform'
+                    sh 'terraform version'
                 }
             }
         }
