@@ -2,7 +2,12 @@ pipeline {
     agent any
     environment {
         GIT_REPOSITORY = "git@github.com:pggomez1989/todo-list-devops.git"
-        BRANCH_PROJECT = "main"
+        BRANCH_PROJECT = "main",
+        AWS_ACCESS_KEY_ID = credentials('aws-access-key-id')
+        AWS_SECRET_ACCESS_KEY = credentials('aws-secret-access-key') 
+    }
+    parameters {
+        booleanParam(name: 'DESTROY_INFRA', defaultValue: false, description: 'Set to true to destroy the infrastructure')
     }
     stages {
         // stage('Build start') {
@@ -58,8 +63,5 @@ pipeline {
                 }
             }
         }
-    }
-    parameters {
-        booleanParam(name: 'DESTROY_INFRA', defaultValue: false, description: 'Set to true to destroy the infrastructure')
     }
 }
