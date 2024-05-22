@@ -60,13 +60,15 @@ pipeline {
         stage('Transfer Application Files') {
             steps {
                 script {
-                    def instance_ip = sh(script: 'terraform output -raw instance_ip', returnStdout: true, dir: 'infrastructure/terraform').trim()
-                    echo "Instance IP: ${instance_ip}"
-                    if (!instance_ip) {
-                        error "Failed to obtain instance IP from Terraform output"
-                    }
-                    sshagent(credentials: ['my-ssh-key']) {
-                        sh "scp -o StrictHostKeyChecking=no -r app/* ubuntu@${instance_ip}:/home/ubuntu/application/"
+                    dir('infrastructure/terraform') {
+                        def instance_ip = sh(script: 'terraform output -raw instance_ip', returnStdout: true).trim()
+                        echo "Instance IP: ${instance_ip}"
+                        if (!instance_ip) {
+                            error "Failed to obtain instance IP from Terraform output"
+                        }
+                        sshagent(credentials: ['my-ssh-key']) {
+                            sh "scp -o StrictHostKeyChecking=no -r app/* ubuntu@${instance_ip}:/home/ubuntu/application/"
+                        }
                     }
                 }
             }
@@ -74,13 +76,15 @@ pipeline {
         stage('Deploy Docker Compose') {
             steps {
                 script {
-                    def instance_ip = sh(script: 'terraform output -raw instance_ip', returnStdout: true, dir: 'infrastructure/terraform').trim()
-                    echo "Instance IP: ${instance_ip}"
-                    if (!instance_ip) {
-                        error "Failed to obtain instance IP from Terraform output"
-                    }
-                    sshagent(credentials: ['my-ssh-key']) {
-                        sh "ssh -o StrictHostKeyChecking=no ubuntu@${instance_ip} 'cd /home/ubuntu/application && docker-compose up -d'"
+                    dir('infrastructure/terraform') {
+                        def instance_ip = sh(script: 'terraform output -raw instance_ip', returnStdout: true).trim()
+                        echo "Instance IP: ${instance_ip}"
+                        if (!instance_ip) {
+                            error "Failed to obtain instance IP from Terraform output"
+                        }
+                        sshagent(credentials: ['my-ssh-key']) {
+                            sh "ssh -o StrictHostKeyChecking=no ubuntu@${instance_ip} 'cd /home/ubuntu/application && docker-compose up -d'"
+                        }
                     }
                 }
             }
