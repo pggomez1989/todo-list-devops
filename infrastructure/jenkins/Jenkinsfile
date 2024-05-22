@@ -57,7 +57,7 @@ pipeline {
                 }
             }
         }
-        stage('Transfer Application Files') {
+        stage('Obtain Instance IP') {
             steps {
                 script {
                     dir('infrastructure/terraform') {
@@ -66,9 +66,25 @@ pipeline {
                         if (!instance_ip) {
                             error "Failed to obtain instance IP from Terraform output"
                         }
-                        sshagent(credentials: ['my-ssh-key']) {
-                            sh "scp -o StrictHostKeyChecking=no -r app/* ubuntu@${instance_ip}:/home/ubuntu/application/"
-                        }
+                        env.INSTANCE_IP = instance_ip
+                    }
+                }
+            }
+        }
+        stage('Prepare EC2 Instance') {
+            steps {
+                script {
+                    sshagent(credentials: ['my-ssh-key']) {
+                        sh "ssh -o StrictHostKeyChecking=no ubuntu@${env.INSTANCE_IP} 'mkdir -p /home/ubuntu/application'"
+                    }
+                }
+            }
+        }
+        stage('Transfer Application Files') {
+            steps {
+                script {
+                    sshagent(credentials: ['my-ssh-key']) {
+                        sh "scp -o StrictHostKeyChecking=no -r app/* ubuntu@${env.INSTANCE_IP}:/home/ubuntu/application/"
                     }
                 }
             }
@@ -76,15 +92,8 @@ pipeline {
         stage('Deploy Docker Compose') {
             steps {
                 script {
-                    dir('infrastructure/terraform') {
-                        def instance_ip = sh(script: 'terraform output -raw instance_ip', returnStdout: true).trim()
-                        echo "Instance IP: ${instance_ip}"
-                        if (!instance_ip) {
-                            error "Failed to obtain instance IP from Terraform output"
-                        }
-                        sshagent(credentials: ['my-ssh-key']) {
-                            sh "ssh -o StrictHostKeyChecking=no ubuntu@${instance_ip} 'cd /home/ubuntu/application && docker-compose up -d'"
-                        }
+                    sshagent(credentials: ['my-ssh-key']) {
+                        sh "ssh -o StrictHostKeyChecking=no ubuntu@${env.INSTANCE_IP} 'cd /home/ubuntu/application && docker-compose up -d'"
                     }
                 }
             }
