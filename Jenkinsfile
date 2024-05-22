@@ -58,8 +58,10 @@ pipeline {
             steps {
                 script {
                     def instance_ip = sh(script: 'terraform output -raw instance_ip', returnStdout: true).trim()
-                    sh "scp -o StrictHostKeyChecking=no -i ~/.ssh/my-key-api.pem docker-compose.yml ubuntu@${instance_ip}:/home/ubuntu/"
-                    sh "ssh -o StrictHostKeyChecking=no -i ~/.ssh/my-key-api.pem ubuntu@${instance_ip} 'docker-compose -f /home/ubuntu/docker-compose.yml up -d'"
+                    sshagent(credentials: ['my-ssh-key']) {
+                        sh "scp -o StrictHostKeyChecking=no docker-compose.yml ubuntu@${instance_ip}:/home/ubuntu/"
+                        sh "ssh -o StrictHostKeyChecking=no ubuntu@${instance_ip} 'docker-compose -f /home/ubuntu/docker-compose.yml up -d'"
+                    }
                 }
             }
         }
