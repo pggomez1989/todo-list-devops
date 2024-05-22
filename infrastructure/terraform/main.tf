@@ -83,25 +83,5 @@ resource "aws_instance" "ec2_example" {
     Name = "My-EC2"
   }
 
-  user_data = <<-EOF
-              #!/bin/bash
-              # Actualizar los paquetes y el sistema
-              sudo apt-get update
-              sudo apt-get upgrade -y
-
-              # Instalar Docker
-              curl -fsSL https://get.docker.com -o get-docker.sh
-              sudo sh get-docker.sh
-
-              # Agregar tu usuario al grupo de Docker
-              sudo usermod -aG docker ubuntu
-
-              # Instalar Docker Compose
-              sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-              sudo chmod +x /usr/local/bin/docker-compose
-
-              # Verificar la instalación
-              docker --version
-              docker-compose --version
-              EOF
+  user_data = file("script.sh")
 }
