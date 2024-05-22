@@ -58,6 +58,9 @@ pipeline {
             }
         }
         stage('Obtain Instance IP') {
+            when {
+                expression { return !params.DESTROY_INFRA }
+            }
             steps {
                 script {
                     dir('infrastructure/terraform') {
@@ -72,6 +75,9 @@ pipeline {
             }
         }
         stage('Prepare EC2 Instance') {
+            when {
+                expression { return !params.DESTROY_INFRA }
+            }
             steps {
                 script {
                     sshagent(credentials: ['my-ssh-key']) {
@@ -81,6 +87,9 @@ pipeline {
             }
         }
         stage('Transfer Application Files') {
+            when {
+                expression { return !params.DESTROY_INFRA }
+            }
             steps {
                 script {
                     sshagent(credentials: ['my-ssh-key']) {
@@ -90,6 +99,9 @@ pipeline {
             }
         }
         stage('Deploy Docker Compose') {
+            when {
+                expression { return !params.DESTROY_INFRA }
+            }
             steps {
                 script {
                     sshagent(credentials: ['my-ssh-key']) {
