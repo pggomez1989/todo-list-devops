@@ -24,33 +24,7 @@ sudo apt-get install -y nginx
 # Generar un certificado SSL autofirmado
 sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/private/nginx-selfsigned.key -out /etc/ssl/certs/nginx-selfsigned.crt -subj "/CN=example.com"
 
-# Configurar Nginx como proxy inverso
-sudo bash -c 'cat > /etc/nginx/sites-available/default <<EOL
-server {
-    listen 80;
-    listen [::]:80;
-    server_name _;
-
-    location / {
-        proxy_pass http://localhost:3000;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-    }
-
-    listen 443 ssl; # managed by Certbot
-    ssl_certificate /etc/ssl/certs/nginx-selfsigned.crt;
-    ssl_certificate_key /etc/ssl/private/nginx-selfsigned.key;
-    include /etc/nginx/snippets/self-signed.conf;
-    include /etc/nginx/snippets/ssl-params.conf;
-}
-EOL'
-
-# Reiniciar Nginx para aplicar la configuración
-sudo systemctl restart nginx
-
-# Crear los snippets para SSL en Nginx
+# Crear snippets de configuración SSL
 sudo bash -c 'cat > /etc/nginx/snippets/self-signed.conf <<EOL
 ssl_certificate /etc/ssl/certs/nginx-selfsigned.crt;
 ssl_certificate_key /etc/ssl/private/nginx-selfsigned.key;
@@ -70,3 +44,42 @@ resolver_timeout 5s;
 add_header X-Frame-Options DENY;
 add_header X-Content-Type-Options nosniff;
 EOL'
+
+# Configurar Nginx como proxy inverso con soporte para SSL
+sudo bash -c 'cat > /etc/nginx/sites-available/default <<EOL
+server {
+    listen 80;
+    listen [::]:80;
+    server_name _;
+
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+    }
+}
+
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    server_name _;
+
+    ssl_certificate /etc/ssl/certs/nginx-selfsigned.crt;
+    ssl_certificate_key /etc/ssl/private/nginx-selfsigned.key;
+    include /etc/nginx/snippets/self-signed.conf;
+    include /etc/nginx/snippets/ssl-params.conf;
+
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+    }
+}
+EOL'
+
+# Reiniciar Nginx para aplicar la configuración
+sudo systemctl restart nginx
