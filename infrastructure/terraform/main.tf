@@ -1,5 +1,5 @@
 data "aws_vpc" "vpc_id" {
-  id = "vpc-074236cf5217078f1"  // ID de tu VPC existente
+  id = "vpc-074236cf5217078f1"
 }
 
 data "aws_subnet" "subnet" {
@@ -10,14 +10,14 @@ data "aws_subnet" "subnet" {
 
   filter {
     name   = "availability-zone"
-    values = ["us-east-1a"]  // Cambia esto a la zona de disponibilidad que prefieras
+    values = ["us-east-1a"]
   }
 }
 
 
-resource "aws_security_group" "sg" {
-  name        = "sg"
-  description = "Creo un grupo de seguridad"
+resource "aws_security_group" "sg_todo_list" {
+  name        = "sg_todo_list"
+  description = "Grupo de seguridad para la aplicación 'Todo List'"
   vpc_id      = data.aws_vpc.vpc_id.id
 
   // Reglas de ingreso
@@ -44,7 +44,7 @@ resource "aws_security_group" "sg" {
     from_port   = 3000
     to_port     = 3000
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]  // Permitir tráfico desde cualquier IP. Usa rangos más restringidos en producción.
+    cidr_blocks = ["0.0.0.0/0"]
     ipv6_cidr_blocks = ["::0/0"]
   }
 
@@ -58,6 +58,7 @@ resource "aws_security_group" "sg" {
   # }
 
   ingress {
+    description = "HTTPS"
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
@@ -69,17 +70,16 @@ resource "aws_security_group" "sg" {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]  // Permitir todo el tráfico saliente.
+    cidr_blocks = ["0.0.0.0/0"]
     ipv6_cidr_blocks = ["::/0"]
   }
 
   tags = {
-    Name = "My-sg"
+    Name = "My-sg-todo-list"
   }
 }
 
-resource "aws_instance" "ec2_example" {
-  # count =  var.instance_count
+resource "aws_instance" "ec2_todo_list" {
   ami           = var.ami
   instance_type = var.instance_type
   key_name      = var.key_name
@@ -87,7 +87,7 @@ resource "aws_instance" "ec2_example" {
   subnet_id              = data.aws_subnet.subnet.id
   
   tags = {
-    Name = "My-EC2"
+    Name = "My-EC2-Todo-List"
   }
 
   user_data = file("script.sh")
