@@ -83,7 +83,7 @@ resource "aws_instance" "ec2_todo_list" {
   ami           = var.ami
   instance_type = var.instance_type
   key_name      = var.key_name
-  vpc_security_group_ids = [aws_security_group.sg.id]
+  vpc_security_group_ids = [aws_security_group.sg_todo_list.id]
   subnet_id              = data.aws_subnet.subnet.id
   
   tags = {
