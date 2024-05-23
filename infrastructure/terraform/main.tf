@@ -17,7 +17,7 @@ data "aws_subnet" "subnet" {
 
 resource "aws_security_group" "sg_todo_list" {
   name        = "sg_todo_list"
-  description = "Grupo de seguridad para la aplicación 'Todo List'"
+  description = "Grupo de seguridad para la aplicación Todo List"
   vpc_id      = data.aws_vpc.vpc_id.id
 
   // Reglas de ingreso
