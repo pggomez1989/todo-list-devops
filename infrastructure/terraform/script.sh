@@ -14,15 +14,15 @@ sudo usermod -aG docker ubuntu
 sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
 sudo chmod +x /usr/local/bin/docker-compose
 
+# Verificar la instalación
+docker --version
+docker-compose --version
+
 # Instalar Nginx
 sudo apt-get install -y nginx
 
-# Obtener la IP pública de la instancia EC2
-PUBLIC_IP=$(curl http://169.254.169.254/latest/meta-data/public-ipv4)
-
-# Generar certificados SSL autofirmados usando la IP pública
-sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/private/nginx-selfsigned.key -out /etc/ssl/certs/nginx-selfsigned.crt -subj "/CN=${PUBLIC_IP}"
-sudo openssl dhparam -out /etc/ssl/certs/dhparam.pem 2048
+# Generar un certificado SSL autofirmado
+sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/private/nginx-selfsigned.key -out /etc/ssl/certs/nginx-selfsigned.crt -subj "/CN=example.com"
 
 # Crear snippets de configuración SSL
 sudo bash -c 'cat > /etc/nginx/snippets/self-signed.conf <<EOL
@@ -31,7 +31,7 @@ ssl_certificate_key /etc/ssl/private/nginx-selfsigned.key;
 EOL'
 
 sudo bash -c 'cat > /etc/nginx/snippets/ssl-params.conf <<EOL
-ssl_protocols TLSv1.2 TLSv1.3;
+ssl_protocols TLSv1.2;
 ssl_prefer_server_ciphers on;
 ssl_ciphers "EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH";
 ssl_ecdh_curve secp384r1;
@@ -53,7 +53,11 @@ server {
     server_name _;
 
     location / {
-        return 301 https://\$host\$request_uri;
+        proxy_pass http://localhost:3000;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
     }
 }
 
@@ -62,6 +66,8 @@ server {
     listen [::]:443 ssl;
     server_name _;
 
+    ssl_certificate /etc/ssl/certs/nginx-selfsigned.crt;
+    ssl_certificate_key /etc/ssl/private/nginx-selfsigned.key;
     include /etc/nginx/snippets/self-signed.conf;
     include /etc/nginx/snippets/ssl-params.conf;
 
@@ -75,9 +81,5 @@ server {
 }
 EOL'
 
-# Reiniciar Nginx para aplicar cambios
+# Reiniciar Nginx para aplicar la configuración
 sudo systemctl restart nginx
-
-# Verificar instalación
-docker --version
-docker-compose --version
