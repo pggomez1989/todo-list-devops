@@ -1,7 +1,6 @@
 #!/bin/bash
-# Actualizar los paquetes y el sistema
-sudo apt-get update
-sudo apt-get upgrade -y
+sudo apt-get update && sudo apt-get upgrade -y
+sudo apt-get install -y nginx
 
 # Instalar Docker
 curl -fsSL https://get.docker.com -o get-docker.sh
@@ -18,58 +17,23 @@ sudo chmod +x /usr/local/bin/docker-compose
 docker --version
 docker-compose --version
 
-# Instalar Nginx
-sudo apt-get install -y nginx
-
-# Generar un certificado SSL autofirmado
-sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/private/nginx-selfsigned.key -out /etc/ssl/certs/nginx-selfsigned.crt -subj "/CN=example.com"
-
-# Crear snippets de configuración SSL
-sudo bash -c 'cat > /etc/nginx/snippets/self-signed.conf <<EOL
-ssl_certificate /etc/ssl/certs/nginx-selfsigned.crt;
-ssl_certificate_key /etc/ssl/private/nginx-selfsigned.key;
-EOL'
-
-sudo bash -c 'cat > /etc/nginx/snippets/ssl-params.conf <<EOL
-ssl_protocols TLSv1.2;
-ssl_prefer_server_ciphers on;
-ssl_ciphers "EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH";
-ssl_ecdh_curve secp384r1;
-ssl_session_cache shared:SSL:10m;
-ssl_session_tickets off;
-ssl_stapling on;
-ssl_stapling_verify on;
-resolver 8.8.8.8 8.8.4.4 valid=300s;
-resolver_timeout 5s;
-add_header X-Frame-Options DENY;
-add_header X-Content-Type-Options nosniff;
-EOL'
-
-# Configurar Nginx como proxy inverso con soporte para SSL
-sudo bash -c 'cat > /etc/nginx/sites-available/default <<EOL
+# Configurar Nginx
+sudo cat <<EOL > /etc/nginx/sites-available/default
 server {
     listen 80;
-    listen [::]:80;
     server_name _;
 
     location / {
-        proxy_pass http://localhost:3000;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
+        return 301 https://\$host\$request_uri;
     }
 }
 
 server {
     listen 443 ssl;
-    listen [::]:443 ssl;
     server_name _;
 
-    ssl_certificate /etc/ssl/certs/nginx-selfsigned.crt;
-    ssl_certificate_key /etc/ssl/private/nginx-selfsigned.key;
-    include /etc/nginx/snippets/self-signed.conf;
-    include /etc/nginx/snippets/ssl-params.conf;
+    ssl_certificate /etc/nginx/ssl/nginx.crt;
+    ssl_certificate_key /etc/nginx/ssl/nginx.key;
 
     location / {
         proxy_pass http://localhost:3000;
@@ -79,7 +43,11 @@ server {
         proxy_set_header X-Forwarded-Proto \$scheme;
     }
 }
-EOL'
+EOL
 
-# Reiniciar Nginx para aplicar la configuración
 sudo systemctl restart nginx
+
+cd /home/ubuntu/  # Cambia esto si tu usuario es diferente
+git clone https://github.com/pggomez1989/todo-list-devops.git  # Cambia esto a tu repositorio
+cd todo-list-devops/app  # Cambia esto al nombre de tu directorio de la aplicación
+sudo docker-compose up -d
