@@ -98,21 +98,21 @@ pipeline {
         //         }
         //     }
         // }
-        stage('Deploy Docker Compose') {
-            when {
-                expression { return !params.DESTROY_INFRA }
-            }
-            steps {
-                script {
-                    sshagent(credentials: ['my-ssh-key']) {
-                        // Clonar el repositorio
-                        sh "ssh -o StrictHostKeyChecking=no ubuntu@${env.INSTANCE_IP} 'git clone https://github.com/pggomez1989/todo-list-devops.git /home/ubuntu/todo-list-devops'"
-                        // Entrar al directorio del repositorio y ejecutar docker-compose
-                        sh "ssh -o StrictHostKeyChecking=no ubuntu@${env.INSTANCE_IP} 'cd /home/ubuntu/todo-list-devops/app && sudo docker-compose up -d'"
-                    }
-                }
-            }
-        }
+        // stage('Deploy Docker Compose') {
+        //     when {
+        //         expression { return !params.DESTROY_INFRA }
+        //     }
+        //     steps {
+        //         script {
+        //             sshagent(credentials: ['my-ssh-key']) {
+        //                 // Clonar el repositorio
+        //                 sh "ssh -o StrictHostKeyChecking=no ubuntu@${env.INSTANCE_IP} 'git clone https://github.com/pggomez1989/todo-list-devops.git /home/ubuntu/todo-list-devops'"
+        //                 // Entrar al directorio del repositorio y ejecutar docker-compose
+        //                 sh "ssh -o StrictHostKeyChecking=no ubuntu@${env.INSTANCE_IP} 'cd /home/ubuntu/todo-list-devops/app && sudo docker-compose up -d'"
+        //             }
+        //         }
+        //     }
+        // }
 
     }
 }
