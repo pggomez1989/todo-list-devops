@@ -18,31 +18,31 @@ sudo docker --version && sudo docker-compose --version
 
 echo "============== DOCKER INSTALADO CON EXITO ================"
 
-if [[ $(id -u) -ne 0  ]]; then
-   echo "debes ser root"
-     exit 1;
-fi
+# if [[ $(id -u) -ne 0  ]]; then
+#    echo "debes ser root"
+#      exit 1;
+# fi
 
-if [[ -d rampUp-v1.0  ]]; then
-      echo "directorio existente"
+# if [[ -d rampUp-v1.0  ]]; then
+#       echo "directorio existente"
 
-else
-     cd /home/ubuntu/
-     git clone https://github.com/ElielBloemer/rampUp-v1.0.git
-fi
+# else
+#      cd /home/ubuntu/
+#      git clone https://github.com/ElielBloemer/rampUp-v1.0.git
+# fi
 
-cd ./rampUp-v1.0/docker-compose/
+# cd ./rampUp-v1.0/docker-compose/
 
-ip=$(curl -s ifconfig.me)
+# ip=$(curl -s ifconfig.me)
 
-if [[ ! $(grep -i "BACKEND_URL" .env | cut -d"=" -f2) =~ ^[0-9.:]+$ ]];then
-       echo "seteando ip"
-       sed -i -e "/BACKEND_URL/s/=/=${ip}:3000/g" .env
-else
-        echo "ip ya seteada"
-fi
+# if [[ ! $(grep -i "BACKEND_URL" .env | cut -d"=" -f2) =~ ^[0-9.:]+$ ]];then
+#        echo "seteando ip"
+#        sed -i -e "/BACKEND_URL/s/=/=${ip}:3000/g" .env
+# else
+#         echo "ip ya seteada"
+# fi
 
-echo "------------------------------"
-echo " IP PUBLICA $ip "
+# echo "------------------------------"
+# echo " IP PUBLICA $ip "
 
-sudo docker-compose up -d
+# sudo docker-compose up -d
