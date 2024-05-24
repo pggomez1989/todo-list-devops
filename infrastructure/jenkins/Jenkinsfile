@@ -57,23 +57,23 @@ pipeline {
                 }
             }
         }
-        stage('Obtain Instance IP') {
-            when {
-                expression { return !params.DESTROY_INFRA }
-            }
-            steps {
-                script {
-                    dir('infrastructure/terraform') {
-                        def instance_ip = sh(script: 'terraform output -raw instance_ip', returnStdout: true).trim()
-                        echo "Instance IP: ${instance_ip}"
-                        if (!instance_ip) {
-                            error "Failed to obtain instance IP from Terraform output"
-                        }
-                        env.INSTANCE_IP = instance_ip
-                    }
-                }
-            }
-        }
+        // stage('Obtain Instance IP') {
+        //     when {
+        //         expression { return !params.DESTROY_INFRA }
+        //     }
+        //     steps {
+        //         script {
+        //             dir('infrastructure/terraform') {
+        //                 def instance_ip = sh(script: 'terraform output -raw instance_ip', returnStdout: true).trim()
+        //                 echo "Instance IP: ${instance_ip}"
+        //                 if (!instance_ip) {
+        //                     error "Failed to obtain instance IP from Terraform output"
+        //                 }
+        //                 env.INSTANCE_IP = instance_ip
+        //             }
+        //         }
+        //     }
+        // }
         // stage('Prepare EC2 Instance') {
         //     when {
         //         expression { return !params.DESTROY_INFRA }

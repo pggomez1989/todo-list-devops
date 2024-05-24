@@ -1,48 +1,53 @@
 #!/bin/bash
-
-sudo apt-get remove docker docker-engine docker.io containerd runc -y
-
 sudo apt-get update && sudo apt-get upgrade -y
+sudo apt-get install -y nginx
 
-sudo apt-get install ca-certificates curl gnupg lsb-release -y
+# Instalar Docker
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
 
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg && \echo \
-  "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
-  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+# Agregar tu usuario al grupo de Docker
+sudo usermod -aG docker ubuntu
 
-sudo apt-get update && sudo apt-get install docker-ce docker-ce-cli containerd.io -y
+# Instalar Docker Compose
+sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
 
-sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && sudo chmod +x /usr/local/bin/docker-compose
+# Verificar la instalación
+docker --version
+docker-compose --version
 
-sudo docker --version && sudo docker-compose --version
+# Configurar Nginx
+sudo cat <<EOL > /etc/nginx/sites-available/default
+server {
+    listen 80;
+    server_name _;
 
-echo "============== DOCKER INSTALADO CON EXITO ================"
+    location / {
+        return 301 https://\$host\$request_uri;
+    }
+}
 
-if [[ $(id -u) -ne 0  ]]; then
-   echo "debes ser root"
-     exit 1;
-fi
+server {
+    listen 443 ssl;
+    server_name _;
 
-if [[ -d rampUp-v1.0  ]]; then
-      echo "directorio existente"
+    ssl_certificate /etc/nginx/ssl/nginx.crt;
+    ssl_certificate_key /etc/nginx/ssl/nginx.key;
 
-else
-     cd /home/ubuntu/
-     git clone https://github.com/pggomez1989/todo-list-devops.git
-fi
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+    }
+}
+EOL
 
-cd ./todo-list-devops/app
+sudo systemctl restart nginx
 
-ip=$(curl -s ifconfig.me)
-
-# if [[ ! $(grep -i "BACKEND_URL" .env | cut -d"=" -f2) =~ ^[0-9.:]+$ ]];then
-#        echo "seteando ip"
-#        sed -i -e "/BACKEND_URL/s/=/=${ip}:3000/g" .env
-# else
-#         echo "ip ya seteada"
-# fi
-
-# echo "------------------------------"
-echo " IP PUBLICA $ip "
-
+cd /home/ubuntu/  # Cambia esto si tu usuario es diferente
+git clone https://github.com/pggomez1989/todo-list-devops.git  # Cambia esto a tu repositorio
+cd todo-list-devops/app  # Cambia esto al nombre de tu directorio de la aplicación
 sudo docker-compose up -d
