@@ -1,53 +1,48 @@
 #!/bin/bash
+
+sudo apt-get remove docker docker-engine docker.io containerd runc -y
+
 sudo apt-get update && sudo apt-get upgrade -y
-sudo apt-get install -y nginx
 
-# Instalar Docker
-curl -fsSL https://get.docker.com -o get-docker.sh
-sudo sh get-docker.sh
+sudo apt-get install ca-certificates curl gnupg lsb-release -y
 
-# Agregar tu usuario al grupo de Docker
-sudo usermod -aG docker ubuntu
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg && \echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
+  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 
-# Instalar Docker Compose
-sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-sudo chmod +x /usr/local/bin/docker-compose
+sudo apt-get update && sudo apt-get install docker-ce docker-ce-cli containerd.io -y
 
-# Verificar la instalación
-docker --version
-docker-compose --version
+sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && sudo chmod +x /usr/local/bin/docker-compose
 
-# Configurar Nginx
-sudo cat <<EOL > /etc/nginx/sites-available/default
-server {
-    listen 80;
-    server_name _;
+sudo docker --version && sudo docker-compose --version
 
-    location / {
-        return 301 https://\$host\$request_uri;
-    }
-}
+echo "============== DOCKER INSTALADO CON EXITO ================"
 
-server {
-    listen 443 ssl;
-    server_name _;
+if [[ $(id -u) -ne 0  ]]; then
+   echo "debes ser root"
+     exit 1;
+fi
 
-    ssl_certificate /etc/nginx/ssl/nginx.crt;
-    ssl_certificate_key /etc/nginx/ssl/nginx.key;
+if [[ -d rampUp-v1.0  ]]; then
+      echo "directorio existente"
 
-    location / {
-        proxy_pass http://localhost:3000;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-    }
-}
-EOL
+else
+     cd /home/ubuntu/
+     git clone https://github.com/ElielBloemer/rampUp-v1.0.git
+fi
 
-sudo systemctl restart nginx
+cd ./rampUp-v1.0/docker-compose/
 
-cd /home/ubuntu/  # Cambia esto si tu usuario es diferente
-git clone https://github.com/pggomez1989/todo-list-devops.git  # Cambia esto a tu repositorio
-cd todo-list-devops/app  # Cambia esto al nombre de tu directorio de la aplicación
+ip=$(curl -s ifconfig.me)
+
+if [[ ! $(grep -i "BACKEND_URL" .env | cut -d"=" -f2) =~ ^[0-9.:]+$ ]];then
+       echo "seteando ip"
+       sed -i -e "/BACKEND_URL/s/=/=${ip}:3000/g" .env
+else
+        echo "ip ya seteada"
+fi
+
+echo "------------------------------"
+echo " IP PUBLICA $ip "
+
 sudo docker-compose up -d
