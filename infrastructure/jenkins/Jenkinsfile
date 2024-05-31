@@ -57,62 +57,62 @@ pipeline {
                 }
             }
         }
-        // stage('Obtain Instance IP') {
-        //     when {
-        //         expression { return !params.DESTROY_INFRA }
-        //     }
-        //     steps {
-        //         script {
-        //             dir('infrastructure/terraform') {
-        //                 def instance_ip = sh(script: 'terraform output -raw instance_ip', returnStdout: true).trim()
-        //                 echo "Instance IP: ${instance_ip}"
-        //                 if (!instance_ip) {
-        //                     error "Failed to obtain instance IP from Terraform output"
-        //                 }
-        //                 env.INSTANCE_IP = instance_ip
-        //             }
-        //         }
-        //     }
-        // }
-        // stage('Prepare EC2 Instance') {
-        //     when {
-        //         expression { return !params.DESTROY_INFRA }
-        //     }
-        //     steps {
-        //         script {
-        //             sshagent(credentials: ['my-ssh-key']) {
-        //                 sh "ssh -o StrictHostKeyChecking=no ubuntu@${env.INSTANCE_IP} 'mkdir -p /home/ubuntu/application'"
-        //             }
-        //         }
-        //     }
-        // }
-        // stage('Transfer Application Files') {
-        //     when {
-        //         expression { return !params.DESTROY_INFRA }
-        //     }
-        //     steps {
-        //         script {
-        //             sshagent(credentials: ['my-ssh-key']) {
-        //                 sh "scp -o StrictHostKeyChecking=no -r app/* ubuntu@${env.INSTANCE_IP}:/home/ubuntu/application/"
-        //             }
-        //         }
-        //     }
-        // }
-        // stage('Deploy Docker Compose') {
-        //     when {
-        //         expression { return !params.DESTROY_INFRA }
-        //     }
-        //     steps {
-        //         script {
-        //             sshagent(credentials: ['my-ssh-key']) {
-        //                 // Clonar el repositorio
-        //                 sh "ssh -o StrictHostKeyChecking=no ubuntu@${env.INSTANCE_IP} 'git clone https://github.com/pggomez1989/todo-list-devops.git /home/ubuntu/todo-list-devops'"
-        //                 // Entrar al directorio del repositorio y ejecutar docker-compose
-        //                 sh "ssh -o StrictHostKeyChecking=no ubuntu@${env.INSTANCE_IP} 'cd /home/ubuntu/todo-list-devops/app && sudo docker-compose up -d'"
-        //             }
-        //         }
-        //     }
-        // }
+        stage('Obtain Instance IP') {
+            when {
+                expression { return !params.DESTROY_INFRA }
+            }
+            steps {
+                script {
+                    dir('infrastructure/terraform') {
+                        def instance_ip = sh(script: 'terraform output -raw instance_ip', returnStdout: true).trim()
+                        echo "Instance IP: ${instance_ip}"
+                        if (!instance_ip) {
+                            error "Failed to obtain instance IP from Terraform output"
+                        }
+                        env.INSTANCE_IP = instance_ip
+                    }
+                }
+            }
+        }
+        stage('Prepare EC2 Instance') {
+            when {
+                expression { return !params.DESTROY_INFRA }
+            }
+            steps {
+                script {
+                    sshagent(credentials: ['my-ssh-key']) {
+                        sh "ssh -o StrictHostKeyChecking=no ubuntu@${env.INSTANCE_IP} 'mkdir -p /home/ubuntu/application'"
+                    }
+                }
+            }
+        }
+        stage('Transfer Application Files') {
+            when {
+                expression { return !params.DESTROY_INFRA }
+            }
+            steps {
+                script {
+                    sshagent(credentials: ['my-ssh-key']) {
+                        sh "scp -o StrictHostKeyChecking=no -r app/* ubuntu@${env.INSTANCE_IP}:/home/ubuntu/application/"
+                    }
+                }
+            }
+        }
+        stage('Deploy Docker Compose') {
+            when {
+                expression { return !params.DESTROY_INFRA }
+            }
+            steps {
+                script {
+                    sshagent(credentials: ['my-ssh-key']) {
+                        // Clonar el repositorio
+                        sh "ssh -o StrictHostKeyChecking=no ubuntu@${env.INSTANCE_IP} 'git clone https://github.com/pggomez1989/todo-list-devops.git /home/ubuntu/todo-list-devops'"
+                        // Entrar al directorio del repositorio y ejecutar docker-compose
+                        sh "ssh -o StrictHostKeyChecking=no ubuntu@${env.INSTANCE_IP} 'cd /home/ubuntu/todo-list-devops/app && sudo docker-compose up -d'"
+                    }
+                }
+            }
+        }
 
     }
 }

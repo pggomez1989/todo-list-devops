@@ -17,42 +17,42 @@ sudo docker --version && sudo docker-compose --version
 
 echo "============== DOCKER INSTALADO CON EXITO ================"
 
-sudo apt-get install -y nginx
+# sudo apt-get install -y nginx
 
-# Configurar Nginx con un certificado SSL autofirmado
-sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/nginx/ssl/nginx.key -out /etc/nginx/ssl/nginx.crt -subj "/CN=localhost"
+# # Configurar Nginx con un certificado SSL autofirmado
+# sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/nginx/ssl/nginx.key -out /etc/nginx/ssl/nginx.crt -subj "/CN=localhost"
 
-# Configurar Nginx
-sudo cat <<EOL > /etc/nginx/sites-available/default
-server {
-    listen 80;
-    server_name _;
+# # Configurar Nginx
+# sudo cat <<EOL > /etc/nginx/sites-available/default
+# server {
+#     listen 80;
+#     server_name _;
 
-    location / {
-        return 301 https://\$host\$request_uri;
-    }
-}
+#     location / {
+#         return 301 https://\$host\$request_uri;
+#     }
+# }
 
-server {
-    listen 443 ssl;
-    server_name _;
+# server {
+#     listen 443 ssl;
+#     server_name _;
 
-    ssl_certificate /etc/nginx/ssl/nginx.crt;
-    ssl_certificate_key /etc/nginx/ssl/nginx.key;
+#     ssl_certificate /etc/nginx/ssl/nginx.crt;
+#     ssl_certificate_key /etc/nginx/ssl/nginx.key;
 
-    location / {
-        proxy_pass http://localhost:3000;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-    }
-}
-EOL
+#     location / {
+#         proxy_pass http://localhost:3000;
+#         proxy_set_header Host \$host;
+#         proxy_set_header X-Real-IP \$remote_addr;
+#         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+#         proxy_set_header X-Forwarded-Proto \$scheme;
+#     }
+# }
+# EOL
 
-sudo systemctl restart nginx
+# sudo systemctl restart nginx
 
-cd /home/ubuntu/  # Cambia esto si tu usuario es diferente
-git clone https://github.com/pggomez1989/todo-list-devops.git  # Cambia esto a tu repositorio
-cd todo-list-devops/app  # Cambia esto al nombre de tu directorio de la aplicación
-sudo docker-compose up -d
+# cd /home/ubuntu/  # Cambia esto si tu usuario es diferente
+# git clone https://github.com/pggomez1989/todo-list-devops.git  # Cambia esto a tu repositorio
+# cd todo-list-devops/app  # Cambia esto al nombre de tu directorio de la aplicación
+# sudo docker-compose up -d
