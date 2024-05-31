@@ -73,6 +73,11 @@ pipeline {
                     }
                 }
             }
+        }
+        stage('Provisionando infra') {
+            when {
+                expression { return !params.DESTROY_INFRA }
+            }
             steps {
                 sh 'sleep 30'
             }
