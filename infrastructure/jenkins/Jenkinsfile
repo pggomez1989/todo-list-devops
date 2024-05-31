@@ -92,7 +92,7 @@ pipeline {
                         // Clonar el repositorio
                         sh "ssh -o StrictHostKeyChecking=no ubuntu@${env.INSTANCE_IP} 'git clone https://github.com/pggomez1989/todo-list-devops.git /home/ubuntu/todo-list-devops'"
                         sh 'sleep 60'
-                        sh 'docker-compose --version'
+                        sh "ssh -o StrictHostKeyChecking=no ubuntu@${env.INSTANCE_IP} 'docker-compose --version'"
                         // Entrar al directorio del repositorio y ejecutar docker-compose
                         sh "ssh -o StrictHostKeyChecking=no ubuntu@${env.INSTANCE_IP} 'cd /home/ubuntu/todo-list-devops/app && sudo docker-compose up -d'"
                     }
