@@ -98,16 +98,33 @@ pipeline {
                     //     // Entrar al directorio del repositorio y ejecutar docker-compose
                     //     sh "ssh -o StrictHostKeyChecking=no ubuntu@${env.INSTANCE_IP} 'cd /home/ubuntu/todo-list-devops/app && sudo docker-compose up -d'"
                     // }
+                    // sshagent(credentials: ['my-ssh-key']) {
+                    //     // Verifica si el directorio existe en la instancia EC2
+                    //     def dirExists = sh(script: "ssh -o StrictHostKeyChecking=no ubuntu@${env.INSTANCE_IP} 'if [ -d /home/ubuntu/todo-list-devops ]; then echo exists; fi'", returnStdout: true).trim()
+
+                    //     if (dirExists == 'exists') {
+                    //         // Si el directorio existe, realiza git pull
+                    //         sh "ssh -o StrictHostKeyChecking=no ubuntu@${env.INSTANCE_IP} 'cd /home/ubuntu/todo-list-devops && git pull origin main'"
+                    //     } else {
+                    //         // Si el directorio no existe, clona el repositorio
+                    //         sh "ssh -o StrictHostKeyChecking=no ubuntu@${env.INSTANCE_IP} 'git clone https://github.com/pggomez1989/todo-list-devops.git /home/ubuntu/todo-list-devops'"
+                    //     }
+
+                    //     sh 'sleep 60'
+                    //     sh "ssh -o StrictHostKeyChecking=no ubuntu@${env.INSTANCE_IP} 'docker-compose --version'"
+                    //     // Entrar al directorio del repositorio y ejecutar docker-compose
+                    //     sh "ssh -o StrictHostKeyChecking=no ubuntu@${env.INSTANCE_IP} 'cd /home/ubuntu/todo-list-devops/app && sudo docker-compose up -d'"
+                    // }
                     sshagent(credentials: ['my-ssh-key']) {
                         // Verifica si el directorio existe en la instancia EC2
                         def dirExists = sh(script: "ssh -o StrictHostKeyChecking=no ubuntu@${env.INSTANCE_IP} 'if [ -d /home/ubuntu/todo-list-devops ]; then echo exists; fi'", returnStdout: true).trim()
 
                         if (dirExists == 'exists') {
                             // Si el directorio existe, realiza git pull
-                            sh "ssh -o StrictHostKeyChecking=no ubuntu@${env.INSTANCE_IP} 'cd /home/ubuntu/todo-list-devops && git pull origin main'"
+                            sh "ssh -o StrictHostKeyChecking=no ubuntu@${env.INSTANCE_IP} 'cd /home/ubuntu/todo-list-devops && git checkout ${BRANCH_PROJECT} && git pull origin ${BRANCH_PROJECT}'"
                         } else {
-                            // Si el directorio no existe, clona el repositorio
-                            sh "ssh -o StrictHostKeyChecking=no ubuntu@${env.INSTANCE_IP} 'git clone https://github.com/pggomez1989/todo-list-devops.git /home/ubuntu/todo-list-devops'"
+                            // Si el directorio no existe, clona el repositorio y cambia a la rama especificada
+                            sh "ssh -o StrictHostKeyChecking=no ubuntu@${env.INSTANCE_IP} 'git clone -b ${BRANCH_PROJECT} https://github.com/pggomez1989/todo-list-devops.git /home/ubuntu/todo-list-devops'"
                         }
 
                         sh 'sleep 60'
