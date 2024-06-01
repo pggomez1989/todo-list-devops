@@ -146,7 +146,7 @@ resource "aws_lb_listener_rule" "lr_todo_list" {
 
   condition {
     host_header {
-      values = [data.aws_instance.ec2_todo_list.public_dns]  # Reemplaza con tu DNS pública del ALB
+      values = [data.aws_instance.example.public_dns]  # Reemplaza con tu DNS pública del ALB
     }
   }
 }
