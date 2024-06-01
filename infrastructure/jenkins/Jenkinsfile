@@ -88,9 +88,28 @@ pipeline {
             }
             steps {
                 script {
+                    // sshagent(credentials: ['my-ssh-key']) {
+                    //     // Elimino el repositorio para hacer una descarga limpia
+                    //     sh "ssh -o StrictHostKeyChecking=no ubuntu@${env.INSTANCE_IP} 'rm -rf /home/ubuntu/todo-list-devops'"
+                    //     // Clonar el repositorio
+                    //     sh "ssh -o StrictHostKeyChecking=no ubuntu@${env.INSTANCE_IP} 'git clone https://github.com/pggomez1989/todo-list-devops.git /home/ubuntu/todo-list-devops'"
+                    //     sh 'sleep 60'
+                    //     sh "ssh -o StrictHostKeyChecking=no ubuntu@${env.INSTANCE_IP} 'docker-compose --version'"
+                    //     // Entrar al directorio del repositorio y ejecutar docker-compose
+                    //     sh "ssh -o StrictHostKeyChecking=no ubuntu@${env.INSTANCE_IP} 'cd /home/ubuntu/todo-list-devops/app && sudo docker-compose up -d'"
+                    // }
                     sshagent(credentials: ['my-ssh-key']) {
-                        // Clonar el repositorio
-                        sh "ssh -o StrictHostKeyChecking=no ubuntu@${env.INSTANCE_IP} 'git clone https://github.com/pggomez1989/todo-list-devops.git /home/ubuntu/todo-list-devops'"
+                        // Verifica si el directorio existe en la instancia EC2
+                        def dirExists = sh(script: "ssh -o StrictHostKeyChecking=no ubuntu@${env.INSTANCE_IP} 'if [ -d /home/ubuntu/todo-list-devops ]; then echo exists; fi'", returnStdout: true).trim()
+
+                        if (dirExists == 'exists') {
+                            // Si el directorio existe, realiza git pull
+                            sh "ssh -o StrictHostKeyChecking=no ubuntu@${env.INSTANCE_IP} 'cd /home/ubuntu/todo-list-devops && git pull origin main'"
+                        } else {
+                            // Si el directorio no existe, clona el repositorio
+                            sh "ssh -o StrictHostKeyChecking=no ubuntu@${env.INSTANCE_IP} 'git clone https://github.com/pggomez1989/todo-list-devops.git /home/ubuntu/todo-list-devops'"
+                        }
+
                         sh 'sleep 60'
                         sh "ssh -o StrictHostKeyChecking=no ubuntu@${env.INSTANCE_IP} 'docker-compose --version'"
                         // Entrar al directorio del repositorio y ejecutar docker-compose
