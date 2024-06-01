@@ -48,22 +48,13 @@ resource "aws_security_group" "sg_todo_list" {
     ipv6_cidr_blocks = ["::0/0"]
   }
 
-  # ingress {
-  #   description      = "Database from Amazon"
-  #   from_port        = 3306
-  #   to_port          = 3306
-  #   protocol         = "tcp"
-  #   cidr_blocks      = ["0.0.0.0/0"]
-  #   ipv6_cidr_blocks = ["::0/0"]
-  # }
-
-  # ingress {
-  #   description = "HTTPS"
-  #   from_port   = 443
-  #   to_port     = 443
-  #   protocol    = "tcp"
-  #   cidr_blocks = ["0.0.0.0/0"]
-  # }
+  ingress {
+    description = "HTTPS"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 
   // Reglas de egreso
   egress {
@@ -79,6 +70,87 @@ resource "aws_security_group" "sg_todo_list" {
   }
 }
 
+# Crea un Application Load Balancer (ALB)
+resource "aws_lb" "lb_todo_list" {
+  name               = "todo-list-alb"
+  internal           = false
+  load_balancer_type = "application"
+  security_groups    = [aws_security_group.sg_todo_list.id]  # Reemplaza con tu security group ID
+  subnets            = [data.aws_subnet.subnet.id]  # Reemplaza con tu subnet ID
+  enable_deletion_protection = false
+}
+
+# Obtiene un certificado SSL/TLS de AWS Certificate Manager (ACM)
+resource "aws_acm_certificate" "acm_todo_list" {
+  domain_name       = data.aws_instance.ec2_todo_list.public_dns
+  validation_method = "DNS"
+}
+
+# Crea un Target Group
+resource "aws_lb_target_group" "tg_todo_list" {
+  name     = "tg-todo-list"
+  port     = 3000
+  protocol = "HTTP"
+  vpc_id   = data.aws_vpc.vpc_id
+
+  health_check {
+    path                = "/"
+    interval            = 30
+    timeout             = 5
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
+    matcher             = "200"
+  }
+}
+
+# Crea un Listener para HTTPS (puerto 443)
+resource "aws_lb_listener" "https" {
+  load_balancer_arn = aws_lb.lb_todo_list.arn
+  port              = 443
+  protocol          = "HTTPS"
+  ssl_policy        = "ELBSecuritPolic-TLS13-1-2-2021-06"
+  certificate_arn   = aws_acm_certificate.acm_todo_list.arn
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.tg_todo_list.arn
+  }
+}
+
+# Crea un Listener para HTTP (puerto 80)
+resource "aws_lb_listener" "http" {
+  load_balancer_arn = aws_lb.lb_todo_list.arn
+  port              = 80
+  protocol          = "HTTP"
+
+  default_action {
+    type = "redirect"
+    
+    redirect {
+      port        = "443"
+      protocol    = "HTTPS"
+      status_code = "HTTP_301"
+    }
+  }
+}
+
+# Crea una regla de enrutamiento para redirigir el tráfico HTTPS al Target Group
+resource "aws_lb_listener_rule" "lr_todo_list" {
+  listener_arn = aws_lb_listener.https.arn
+  priority     = 100
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.tg_todo_list.arn
+  }
+
+  condition {
+    host_header {
+      values = [data.aws_instance.ec2_todo_list.public_dns]  # Reemplaza con tu DNS pública del ALB
+    }
+  }
+}
+
 resource "aws_instance" "ec2_todo_list" {
   ami           = var.ami
   instance_type = var.instance_type
@@ -91,4 +163,9 @@ resource "aws_instance" "ec2_todo_list" {
   }
 
   user_data = file("script.sh")
+}
+
+# Obtener la DNS pública de la instancia EC2 una vez que esté disponible
+data "aws_instance" "example" {
+  instance_id = aws_instance.ec2_todo_list.id
 }
