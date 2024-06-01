@@ -2,7 +2,7 @@ data "aws_vpc" "vpc_id" {
   id = "vpc-074236cf5217078f1"
 }
 
-data "aws_subnet" "subnet" {
+data "aws_subnet" "subnet_us_east_1a" {
   filter {
     name   = "vpc-id"
     values = [data.aws_vpc.vpc_id.id]
@@ -11,6 +11,18 @@ data "aws_subnet" "subnet" {
   filter {
     name   = "availability-zone"
     values = ["us-east-1a"]
+  }
+}
+
+data "aws_subnet" "subnet_us_east_1b" {
+  filter {
+    name   = "vpc-id"
+    values = [data.aws_vpc.vpc_id.id]
+  }
+
+  filter {
+    name   = "availability-zone"
+    values = ["us-east-1b"]
   }
 }
 
@@ -76,13 +88,16 @@ resource "aws_lb" "lb_todo_list" {
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.sg_todo_list.id]  # Reemplaza con tu security group ID
-  subnets            = [data.aws_subnet.subnet.id]  # Reemplaza con tu subnet ID
+  subnets            = [
+    data.aws_subnet.subnet_us_east_1a.id,
+    data.aws_subnet.subnet_us_east_1b.id
+  ]  # Reemplaza con tu subnet ID
   enable_deletion_protection = false
 }
 
 # Obtiene un certificado SSL/TLS de AWS Certificate Manager (ACM)
 resource "aws_acm_certificate" "acm_todo_list" {
-  domain_name       = data.aws_instance.example.public_dns
+  domain_name       = data.aws_instance.ec2_todo_list.public_dns
   validation_method = "DNS"
 }
 
@@ -146,7 +161,7 @@ resource "aws_lb_listener_rule" "lr_todo_list" {
 
   condition {
     host_header {
-      values = [data.aws_instance.example.public_dns]  # Reemplaza con tu DNS pública del ALB
+      values = [data.aws_instance.ec2_todo_list.public_dns]  # Reemplaza con tu DNS pública del ALB
     }
   }
 }
@@ -156,7 +171,7 @@ resource "aws_instance" "ec2_todo_list" {
   instance_type = var.instance_type
   key_name      = var.key_name
   vpc_security_group_ids = [aws_security_group.sg_todo_list.id]
-  subnet_id              = data.aws_subnet.subnet.id
+  subnet_id              = data.aws_subnet.subnet_us_east_1a.id
   
   tags = {
     Name = "My-EC2-Todo-List"
@@ -166,6 +181,6 @@ resource "aws_instance" "ec2_todo_list" {
 }
 
 # Obtener la DNS pública de la instancia EC2 una vez que esté disponible
-data "aws_instance" "example" {
+data "aws_instance" "ec2_todo_list" {
   instance_id = aws_instance.ec2_todo_list.id
 }
