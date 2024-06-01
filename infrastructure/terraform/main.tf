@@ -82,7 +82,7 @@ resource "aws_lb" "lb_todo_list" {
 
 # Obtiene un certificado SSL/TLS de AWS Certificate Manager (ACM)
 resource "aws_acm_certificate" "acm_todo_list" {
-  domain_name       = data.aws_instance.ec2_todo_list.public_dns
+  domain_name       = data.aws_instance.example.public_dns
   validation_method = "DNS"
 }
 
