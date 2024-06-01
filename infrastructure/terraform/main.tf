@@ -91,7 +91,7 @@ resource "aws_lb_target_group" "tg_todo_list" {
   name     = "tg-todo-list"
   port     = 3000
   protocol = "HTTP"
-  vpc_id   = data.aws_vpc.vpc_id
+  vpc_id   = data.aws_vpc.vpc_id.id
 
   health_check {
     path                = "/"
