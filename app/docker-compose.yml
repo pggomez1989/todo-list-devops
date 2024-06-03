@@ -57,6 +57,15 @@ services:
     networks:
       - miapp-net
 
+  loki:
+    image: grafana/loki:latest
+    ports:
+      - '3100:3100'
+    volumes:
+      - loki-data:/loki
+    networks:
+      - miapp-net
+
 networks:
   miapp-net:
     driver: bridge
@@ -64,3 +73,4 @@ networks:
 volumes:
   mysql-data:
   grafana-storage:
+  loki-data:

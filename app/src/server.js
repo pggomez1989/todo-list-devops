@@ -1,21 +1,19 @@
 const app = require('./app');
 const itemsRouter = require('./routes/items');
-const metrics = require('./metrics');
 const db = require('./persistence');
+const logger = require('./logger');
 
 // Rutas
 app.use('/items', itemsRouter);
 
-// Ruta para las métricas de Prometheus
-app.get('/metrics', async (req, res) => {
-    res.set('Content-Type', metrics.contentType);
-    res.end(await metrics.register.metrics());
-});
-
 db.init().then(() => {
     const port = process.env.PORT || 3000;
-    app.listen(port, () => console.log(`Listening on port ${port}`));
+    app.listen(port, () => {
+        logger.info(`Server is running on port ${port}`);
+        console.log(`Listening on port ${port}`);
+    });
 }).catch((err) => {
+    logger.error('An error has ocurred', { err });
     console.error(err);
     process.exit(1);
 });

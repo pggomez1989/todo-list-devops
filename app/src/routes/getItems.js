@@ -1,14 +1,13 @@
 const db = require('../persistence');
-const { httpRequestDurationMicroseconds } = require('../metrics');
+const logger = require('../logger');
 
 module.exports = async (req, res) => {
-    const end = httpRequestDurationMicroseconds.startTimer();
     try {
-        const items = await db.getItems();
-        res.send(items);
+        const items = await db.getItems(); 
+        logger.info('Get all items');
+        res.send(items); 
     } catch (error) {
-        res.status(500).send(error);
-    } finally {
-        end({ method: req.method, route: req.route.path, status_code: res.statusCode });
-    }
+        logger.error('Error getting all items', { error });
+        res.status(500).send(error); 
+    } 
 };

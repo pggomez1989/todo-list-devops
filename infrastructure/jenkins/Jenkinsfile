@@ -10,13 +10,6 @@ pipeline {
         booleanParam(name: 'DESTROY_INFRA', defaultValue: false, description: 'Set to true to destroy the infrastructure')
     }
     stages {
-        // stage('Build start') {
-        //     steps {
-        //         git branch: "${BRANCH_PROJECT}",
-        //             credentialsId: '7df94e06-bbc2-4332-83e5-dfac02b22fd6',
-        //             url: "${GIT_REPOSITORY}"
-        //     }
-        // }
         stage('Setup Terraform') {
             steps {
                 dir('infrastructure/terraform') {

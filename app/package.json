@@ -11,13 +11,16 @@
     "start": "node src/server.js"
   },
   "dependencies": {
+    "axios": "^1.7.2",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "mysql2": "^2.3.3",
     "prom-client": "^15.1.2",
     "sqlite3": "^5.1.2",
     "uuid": "^9.0.0",
-    "wait-port": "^1.0.4"
+    "wait-port": "^1.0.4",
+    "winston": "^3.13.0",
+    "winston-loki": "^6.1.2"
   },
   "resolutions": {
     "ansi-regex": "5.0.1"

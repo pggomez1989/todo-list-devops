@@ -1,14 +1,14 @@
 const db = require('../persistence');
-const { httpRequestDurationMicroseconds } = require('../metrics');
+const logger = require('../logger');
 
 module.exports = async (req, res) => {
-    const end = httpRequestDurationMicroseconds.startTimer();
     try {
-        await db.removeItem(req.params.id);
+        const itemId = req.params.id;
+        await db.removeItem(itemId);
+        logger.info('Item deleted', { itemId });
         res.sendStatus(200);
     } catch (error) {
+        logger.error('Error deleting item', { error });
         res.status(500).send(error);
-    } finally {
-        end({ method: req.method, route: req.route.path, status_code: res.statusCode });
-    }
+    } 
 };

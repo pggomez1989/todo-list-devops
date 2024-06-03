@@ -1,9 +1,8 @@
 const db = require('../persistence');
 const {v4 : uuid} = require('uuid');
-const { httpRequestDurationMicroseconds } = require('../metrics');
+const logger = require('../logger');
 
 module.exports = async (req, res) => {
-    const end = httpRequestDurationMicroseconds.startTimer();
     try {
         const item = {
             id: uuid(),
@@ -12,10 +11,10 @@ module.exports = async (req, res) => {
         };
 
         await db.storeItem(item);
+        logger.info('Item added', { item });
         res.send(item);
     } catch (error) {
+        logger.error('Error adding item', { error });
         res.status(500).send(error);
-    } finally {
-        end({ method: req.method, route: req.route.path, status_code: res.statusCode });
     }
 };
