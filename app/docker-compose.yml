@@ -57,19 +57,6 @@ services:
     networks:
       - miapp-net
 
-  nginx:
-    image: nginx:latest
-    ports:
-      - "80:80"
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf
-    depends_on:
-      - miapp
-      - grafana
-      - prometheus
-    networks:
-      - miapp-net
-
 networks:
   miapp-net:
     driver: bridge
