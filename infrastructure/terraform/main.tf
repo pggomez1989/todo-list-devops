@@ -51,14 +51,30 @@ resource "aws_security_group" "sg_todo_list" {
     ipv6_cidr_blocks = ["::0/0"]
   }
 
-  ingress {
-    description      = "API"
-    from_port   = 3000
-    to_port     = 3000
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-    ipv6_cidr_blocks = ["::0/0"]
-  }
+  # ingress {
+  #   description      = "API"
+  #   from_port   = 3000
+  #   to_port     = 3000
+  #   protocol    = "tcp"
+  #   cidr_blocks = ["0.0.0.0/0"]
+  #   ipv6_cidr_blocks = ["::0/0"]
+  # }
+
+  # ingress {
+  #   description = "Grafana"
+  #   from_port   = 3001
+  #   to_port     = 3001
+  #   protocol    = "tcp"
+  #   cidr_blocks = ["0.0.0.0/0"]
+  # }
+
+  # ingress {
+  #   description = "Prometheus"
+  #   from_port   = 9090
+  #   to_port     = 9090
+  #   protocol    = "tcp"
+  #   cidr_blocks = ["0.0.0.0/0"]
+  # }
 
   # ingress {
   #   description = "HTTPS"
@@ -101,10 +117,9 @@ resource "aws_lb" "lb_todo_list" {
 #   validation_method = "DNS"
 # }
 
-# Crea un Target Group
 resource "aws_lb_target_group" "tg_todo_list" {
   name     = "tg-todo-list"
-  port     = 3000
+  port     = 80
   protocol = "HTTP"
   vpc_id   = data.aws_vpc.vpc_id.id
 
@@ -117,6 +132,54 @@ resource "aws_lb_target_group" "tg_todo_list" {
     matcher             = "200"
   }
 }
+# Crea un Target Group
+# resource "aws_lb_target_group" "tg_todo_list" {
+#   name     = "tg-todo-list"
+#   port     = 3000
+#   protocol = "HTTP"
+#   vpc_id   = data.aws_vpc.vpc_id.id
+
+#   health_check {
+#     path                = "/"
+#     interval            = 30
+#     timeout             = 5
+#     healthy_threshold   = 2
+#     unhealthy_threshold = 2
+#     matcher             = "200"
+#   }
+# }
+
+# resource "aws_lb_target_group" "tg_grafana" {
+#   name     = "tg-grafana"
+#   port     = 3001
+#   protocol = "HTTP"
+#   vpc_id   = data.aws_vpc.vpc_id.id
+
+#   health_check {
+#     path                = "/"
+#     interval            = 30
+#     timeout             = 5
+#     healthy_threshold   = 2
+#     unhealthy_threshold = 2
+#     matcher             = "200"
+#   }
+# }
+
+# resource "aws_lb_target_group" "tg_prometheus" {
+#   name     = "tg-prometheus"
+#   port     = 9090
+#   protocol = "HTTP"
+#   vpc_id   = data.aws_vpc.vpc_id.id
+
+#   health_check {
+#     path                = "/"
+#     interval            = 30
+#     timeout             = 5
+#     healthy_threshold   = 2
+#     unhealthy_threshold = 2
+#     matcher             = "200"
+#   }
+# }
 
 # Crea un Listener para HTTPS (puerto 443)
 # resource "aws_lb_listener" "https" {
@@ -131,34 +194,81 @@ resource "aws_lb_target_group" "tg_todo_list" {
 #     target_group_arn = aws_lb_target_group.tg_todo_list.arn
 #   }
 # }
-
-# Crea un Listener para HTTP (puerto 80)
 resource "aws_lb_listener" "http" {
   load_balancer_arn = aws_lb.lb_todo_list.arn
   port              = 80
   protocol          = "HTTP"
 
-  # default_action {
-  #   type = "redirect"
-    
-  #   redirect {
-  #     port        = "443"
-  #     protocol    = "HTTPS"
-  #     status_code = "HTTP_301"
-  #   }
-  # }
   default_action {
-    type = "forward"
-    
+    type             = "forward"
     target_group_arn = aws_lb_target_group.tg_todo_list.arn
   }
 }
+# Crea un Listener para HTTP (puerto 80)
+# resource "aws_lb_listener" "http" {
+#   load_balancer_arn = aws_lb.lb_todo_list.arn
+#   port              = 80
+#   protocol          = "HTTP"
 
-resource "aws_lb_target_group_attachment" "tg_attachment" {
+#   # default_action {
+#   #   type = "redirect"
+    
+#   #   redirect {
+#   #     port        = "443"
+#   #     protocol    = "HTTPS"
+#   #     status_code = "HTTP_301"
+#   #   }
+#   # }
+#   default_action {
+#     type = "forward"
+    
+#     target_group_arn = aws_lb_target_group.tg_todo_list.arn
+#   }
+# }
+
+# resource "aws_lb_listener" "http_grafana" {
+#   load_balancer_arn = aws_lb.lb_todo_list.arn
+#   port              = 3001
+#   protocol          = "HTTP"
+
+#   default_action {
+#     type = "forward"
+#     target_group_arn = aws_lb_target_group.tg_grafana.arn
+#   }
+# }
+
+# resource "aws_lb_listener" "http_prometheus" {
+#   load_balancer_arn = aws_lb.lb_todo_list.arn
+#   port              = 9090
+#   protocol          = "HTTP"
+
+#   default_action {
+#     type = "forward"
+#     target_group_arn = aws_lb_target_group.tg_prometheus.arn
+#   }
+# }
+resource "aws_lb_target_group_attachment" "tg_attachment_miapp" {
   target_group_arn = aws_lb_target_group.tg_todo_list.arn
   target_id        = aws_instance.ec2_todo_list.id
-  port             = 3000
+  port             = 80
 }
+# resource "aws_lb_target_group_attachment" "tg_attachment_miapp" {
+#   target_group_arn = aws_lb_target_group.tg_todo_list.arn
+#   target_id        = aws_instance.ec2_todo_list.id
+#   port             = 3000
+# }
+
+# resource "aws_lb_target_group_attachment" "tg_attachment_grafana" {
+#   target_group_arn = aws_lb_target_group.tg_grafana.arn
+#   target_id        = aws_instance.ec2_todo_list.id
+#   port             = 3001
+# }
+
+# resource "aws_lb_target_group_attachment" "tg_attachment_prometheus" {
+#   target_group_arn = aws_lb_target_group.tg_prometheus.arn
+#   target_id        = aws_instance.ec2_todo_list.id
+#   port             = 9090
+# }
 
 # Crea una regla de enrutamiento para redirigir el tráfico HTTPS al Target Group
 # resource "aws_lb_listener_rule" "lr_todo_list" {
